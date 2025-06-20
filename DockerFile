@@ -5,9 +5,9 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     zip \
-    unzip \
+    unzip \ 
     libzip-dev \
-    libpng-dev \
+    libpng-dev \ 
     libonig-dev \
     libxml2-dev \
     sqlite3 \
