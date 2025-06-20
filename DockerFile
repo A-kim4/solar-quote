@@ -1,6 +1,7 @@
+# 1. Utilise PHP avec FPM
 FROM php:8.2-fpm
 
-# Install system dependencies
+# 2. Installe les dépendances système
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -14,26 +15,29 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     && docker-php-ext-install pdo pdo_mysql zip
 
-# Install Composer
+# 3. Installe Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# 4. Crée le dossier de travail
 WORKDIR /var/www
 
-# Copy project files
+# 5. Copie les fichiers de ton projet
 COPY . .
 
-# Install PHP dependencies
+# 6. Installe les dépendances PHP de Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Generate Laravel key if no .env exists (Render ne gère pas ça tout seul)
-COPY .env.example .env
+# 7. 
+# COPY .env.example .env
 
-# Fix permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# 8. Génére la clé de l'app
+RUN php artisan key:generate
 
-# Expose port
+# 9. Donne les permissions nécessaires
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# 10. Expose le port que Laravel utilise
 EXPOSE 8000
 
-# Start Laravel development server
+# 11. Lancement de l'app Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
