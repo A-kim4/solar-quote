@@ -29,9 +29,6 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # Generate Laravel key if no .env exists (Render ne gère pas ça tout seul)
 COPY .env.example .env
 
-# Clear cache
-RUN php artisan config:clear && php artisan cache:clear
-
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
