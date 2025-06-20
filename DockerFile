@@ -5,9 +5,9 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     zip \
-    unzip \ 
+    unzip \
     libzip-dev \
-    libpng-dev \ 
+    libpng-dev \
     libonig-dev \
     libxml2-dev \
     sqlite3 \
@@ -26,13 +26,17 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
+# Generate Laravel key if no .env exists (Render ne gère pas ça tout seul)
+COPY .env.example .env
 
+# Clear cache
+RUN php artisan config:clear && php artisan cache:clear
 
-# Give permissions
+# Fix permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 # Expose port
 EXPOSE 8000
 
-# Start Laravel server
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Start Laravel development server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
