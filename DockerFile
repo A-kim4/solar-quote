@@ -1,5 +1,5 @@
-# Utilise PHP avec FPM
-FROM php:8.2-fpm
+# --------- STAGE 1 : PHP + Composer + Node + Build Vite ----------
+FROM php:8.2-fpm AS build
 
 # Installe les dépendances système
 RUN apt-get update && apt-get install -y \
@@ -13,25 +13,39 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     sqlite3 \
     libsqlite3-dev \
+    npm \
+    nodejs \
     && docker-php-ext-install pdo pdo_mysql zip
 
 # Installe Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Crée le dossier de travail
 WORKDIR /var/www
 
-# Copie les fichiers de ton projet
+# Copie tout le projet
 COPY . .
 
-# Installe les dépendances PHP de Laravel
+# Installe les dépendances PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Donne les permissions nécessaires
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Installe les dépendances NPM
+RUN npm install
 
-# Expose le port que Laravel utilise
+# Compile le front avec Vite
+RUN npm run build
+
+# Donne les permissions
+RUN chown -R www-data:www-data storage bootstrap/cache public/build
+
+# --------- STAGE 2 : Image légère de production ----------
+FROM php:8.2-fpm
+
+WORKDIR /var/www
+
+# Copie le résultat du build depuis l'étape précédente
+COPY --from=build /var/www /var/www
+
 EXPOSE 8000
 
-# Lancement de l'app Laravel
+# Lancement de Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
