@@ -27,8 +27,8 @@ COPY . .
 # 6. Installe les dépendances PHP de Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# 7. 
-# COPY .env.example .env
+# Copie le .env.example
+COPY .env.example .env
 
 # 8. Génére la clé de l'app
 RUN php artisan key:generate
